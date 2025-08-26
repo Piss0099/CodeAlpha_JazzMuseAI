@@ -43,3 +43,23 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer='adam')
 
 # Train
 model.fit(X, y, epochs=20, batch_size=64)
+
+# Generate new melody
+start_index = random.randint(0, len(X) - 1)
+generated = list(X[start_index].flatten())
+
+for _ in range(50):
+    prediction = model.predict(np.array(generated[-seq_length:]).reshape(1, seq_length, 1))
+    next_note = np.argmax(prediction)
+    generated.append(next_note)
+
+# Convert back to notes
+generated_notes = [pitches[i] for i in generated]
+
+# Save to MIDI
+output_stream = stream.Stream()
+for pitch in generated_notes:
+    output_stream.append(converter.note.Note(pitch))
+output_stream.write('midi', fp='generated_music.mid')
+
+print("✅ Music generated and saved as 'generated_music.mid'")
